@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kece</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo {
+            height: 50px;
+            width: auto;
+            margin-right: 10px;
+            border-radius: 50%;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 60%;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        nav {
+            margin-top: 10px;
+        }
+        #job-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+        }
+        .job-item {
+            background-color: white;
+            margin: 10px;
+            padding: 20px;
+            width: 250px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .job-item h3 {
+            color: #333;
+        }
+        .job-item p {
+            color: #666;
+        }
+        .save-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        .save-icon.saved {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="logo.jpg" alt="Logo" class="logo">
+        <h1>Kece</h1>
+    </header>
+    <input type="text" id="search" placeholder="Cari pekerjaan...">
+    <button onclick="searchJobs()">Cari</button>
+    <nav>
+        <button onclick="location.href='saran.html'">Saran</button>
+        <button onclick="location.href='aktivitas.html'">Aktivitas</button>
+        <button onclick="location.href='berita.html'">Berita</button>
+        <button onclick="location.href='disimpan.html'">Disimpan</button>
+        <button onclick="location.href='profil.html'">Profil</button>
+    </nav>
+    
+    <main>
+        <div id="job-list"></div>
+    </main>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let jobList = document.getElementById("job-list");
+
+            let jobTitles = [
+                "Software Engineer", "Data Analyst", "Marketing Manager", "UI/UX Designer", "Project Manager",
+                "Sales Executive", "Customer Service Representative", "Accountant", "HR Specialist", "Graphic Designer",
+                "Content Writer", "Social Media Manager", "Network Engineer", "Cybersecurity Analyst", "Business Consultant"
+            ];
+
+            let countries = [
+                "USA", "UK", "Germany", "France", "Canada", "Australia", "Japan", "Indonesia"
+            ];
+
+            let jobs = [];
+
+            for (let i = 1; i <= 20; i++) {
+                let country = countries[Math.floor(Math.random() * countries.length)];
+                let jobTitle = jobTitles[Math.floor(Math.random() * jobTitles.length)];
+                let jobItem = {
+                    title: `${jobTitle} - ${country}`,
+                    description: `Kami sedang mencari seorang ${jobTitle} untuk bekerja di ${country}.`
+                };
+                jobs.push(jobItem);
+            }
+
+            function displayJobs(filter = "") {
+                jobList.innerHTML = "";
+                let savedJobs = JSON.parse(localStorage.getItem("savedJobs")) || [];
+
+                jobs.forEach(job => {
+                    if (job.title.toLowerCase().includes(filter.toLowerCase()) || job.description.toLowerCase().includes(filter.toLowerCase())) {
+                        let jobElement = document.createElement("div");
+                        jobElement.className = "job-item";
+                        jobElement.innerHTML = `
+                            <span class="save-icon ${savedJobs.some(j => j.title === job.title) ? 'saved' : ''}" onclick="saveJob(this, '${encodeURIComponent(job.title)}', '${encodeURIComponent(job.description)}')">🔖</span>
+                            <h3>${job.title}</h3>
+                            <p>${job.description}</p>
+                            <button onclick="applyJob('${encodeURIComponent(job.title)}', '${encodeURIComponent(job.description)}')">Lamar</button>`;
+                        jobList.appendChild(jobElement);
+                    }
+                });
+            }
+
+            displayJobs();
+
+            window.searchJobs = function() {
+                let searchTerm = document.getElementById("search").value;
+                displayJobs(searchTerm);
+            };
+
+            window.applyJob = function(title, description) {
+                window.location.href = `lamar.html?title=${title}&description=${description}`;
+            };
+
+            window.saveJob = function(icon, title, description) {
+                let savedJobs = JSON.parse(localStorage.getItem("savedJobs")) || [];
+                let job = {
+                    title: decodeURIComponent(title),
+                    description: decodeURIComponent(description)
+                };
+
+                let jobIndex = savedJobs.findIndex(j => j.title === job.title);
+                if (jobIndex === -1) {
+                    savedJobs.push(job);
+                    localStorage.setItem("savedJobs", JSON.stringify(savedJobs));
+                    icon.classList.add("saved");
+                    alert("Lowongan berhasil disimpan!");
+                } else {
+                    savedJobs.splice(jobIndex, 1);
+                    localStorage.setItem("savedJobs", JSON.stringify(savedJobs));
+                    icon.classList.remove("saved");
+                    alert("Lowongan dihapus dari daftar simpan!");
+                }
+            };
+        });
+    </script>
+</body>
+</html>

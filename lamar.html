@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lamar</title>
+    <link rel="icon" href="logo.jpg" type="image/jpeg">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+        }
+        .form-container {
+            background-color: white;
+            margin: 20px auto;
+            padding: 20px;
+            width: 50%;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .form-container h2 {
+            color: #333;
+        }
+        .form-container label {
+            display: block;
+            margin: 10px 0 5px;
+            color: #666;
+            text-align: left;
+        }
+        .form-container input[type="text"],
+        .form-container input[type="email"],
+        .form-container textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .form-container button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .form-container button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Lamar</h1>
+    </header>
+    <div class="form-container">
+        <!-- Judul dan Deskripsi Pekerjaan -->
+        <h2 id="job-title">Judul Pekerjaan</h2>
+        <p id="job-description">Deskripsi Pekerjaan</p>
+
+        <!-- Formulir Lamaran -->
+        <form id="application-form">
+            <label for="full-name">Nama Lengkap:</label>
+            <input type="text" id="full-name" name="full-name" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="phone">Nomor Telepon:</label>
+            <input type="text" id="phone" name="phone" required>
+
+            <label for="resume">Upload CV/Resume (PDF):</label>
+            <input type="file" id="resume" name="resume" accept=".pdf" required>
+
+            <label for="cover-letter">Surat Lamaran:</label>
+            <textarea id="cover-letter" name="cover-letter" rows="5" required></textarea>
+
+            <button type="submit">Kirim Lamaran</button>
+        </form>
+    </div>
+
+    <script>
+        // Ambil parameter dari URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const jobTitle = urlParams.get('title');
+        const jobDescription = urlParams.get('description');
+
+        // Tampilkan judul dan deskripsi pekerjaan
+        document.getElementById('job-title').textContent = decodeURIComponent(jobTitle);
+        document.getElementById('job-description').textContent = decodeURIComponent(jobDescription);
+
+        // Tangani pengiriman formulir
+        document.getElementById('application-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Mencegah pengiriman default
+
+            // Ambil data dari formulir
+            const fullName = document.getElementById('full-name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const resume = document.getElementById('resume').files[0];
+            const coverLetter = document.getElementById('cover-letter').value;
+
+            // Simpan data lamaran ke localStorage (atau kirim ke server)
+            const applicationData = {
+                jobTitle: decodeURIComponent(jobTitle),
+                jobDescription: decodeURIComponent(jobDescription),
+                fullName,
+                email,
+                phone,
+                coverLetter,
+                resume: resume.name // Hanya menyimpan nama file
+            };
+
+            localStorage.setItem('applicationData', JSON.stringify(applicationData));
+
+            // Tampilkan pesan sukses
+            alert(`Lamaran berhasil dikirim!\n\nNama: ${fullName}\nEmail: ${email}\nTelepon: ${phone}\nPekerjaan: ${decodeURIComponent(jobTitle)}`);
+        });
+
+        document.getElementById('application-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    
+    let formData = new FormData();
+    formData.append("fullName", document.getElementById('full-name').value);
+    formData.append("email", document.getElementById('email').value);
+    formData.append("phone", document.getElementById('phone').value);
+    formData.append("coverLetter", document.getElementById('cover-letter').value);
+    formData.append("jobTitle", decodeURIComponent(jobTitle));
+    formData.append("resume", document.getElementById('resume').files[0]);
+
+    fetch("http://localhost:5000/send-email", {
+        method: "POST",
+        body: formData
+    }).then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Lamaran berhasil dikirim! Email konfirmasi dikirim ke pendaftar.");
+        } else {
+            alert("Gagal mengirim email.");
+        }
+    }).catch(error => console.error("Error:", error));
+});
+    </script>
+</body>
+</html>
